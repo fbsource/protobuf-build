@@ -21,3 +21,14 @@ Utility functions for generating Rust code from protobuf specifications.
 
 Can use [rust-protobuf](https://github.com/stepancheg/rust-protobuf) and
 [Prost](https://github.com/danburkert/prost).
+
+## Codec versions
+
+The default `protobuf-codec` generates code for Rust Protobuf 2.x.
+`prost-codec` generates code for Prost 0.14; use a matching `prost` runtime
+dependency (the latest Prost 0.14 release requires Rust 1.85).
+`grpcio-prost-codec` uses `grpcio-compiler`, which still requires Prost 0.11.
+
+On non-Windows platforms, the fallback compiler is built from
+`protobuf-src` 2.1 and requires CMake and a C++ compiler. `PROTOC` can still
+select another compatible compiler. Windows uses the bundled compiler.

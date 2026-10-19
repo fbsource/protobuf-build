@@ -7,13 +7,17 @@ publish = false
 build = "build.rs"
 
 [features]
-protobuf-codec = ["protobuf-build/grpcio-protobuf-codec"]
-prost-codec = ["protobuf-build/grpcio-prost-codec"]
+default = ["protobuf-codec"]
+protobuf-codec = ["protobuf-build/protobuf-codec"]
+prost-codec = ["protobuf-build/prost-codec", "prost"]
+grpcio-protobuf-codec = ["protobuf-codec", "protobuf-build/grpcio-protobuf-codec"]
+grpcio-prost-codec = ["protobuf-build/grpcio-prost-codec", "prost-legacy"]
 
 [dependencies]
 protobuf = "2"
-prost = "0.11"
-prost-derive = "0.11"
+prost = { version = "0.14.4", optional = true }
+# grpcio-compiler still generates code for Prost 0.11.
+prost-legacy = { package = "prost", version = "0.11", optional = true }
 lazy_static = "1.4"
 
 [build-dependencies]
