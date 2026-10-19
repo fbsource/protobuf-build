@@ -419,14 +419,14 @@ impl FieldKind {
                 result.get = Some(match &**fk {
                     FieldKind::Enumeration(t) => format!(
                         "match self.{} {{
-                            Some(v) => match {}::from_i32(v) {{\
+                            Some(v) => match {} {{\
                                 Some(e) => e,
                                 None => panic!(\"Unknown enum variant: {{}}\", v),
                             }},
                             None => {}::default(),
                         }}",
                         result.name,
-                        type_in_expr_context(t),
+                        enum_from_i32(t, "v"),
                         t,
                     ),
                     _ => format!(
@@ -518,11 +518,11 @@ impl FieldKind {
                 result.set = Some("v as i32".to_owned());
                 result.enum_set = true;
                 result.get = Some(format!(
-                    "match {}::from_i32(self.{}) {{\
+                    "match {} {{\
                         Some(e) => e,
-                        None => panic!(\"Unknown enum variant: {{}}\", self.{1}),
+                        None => panic!(\"Unknown enum variant: {{}}\", self.{}),
                     }}",
-                    type_in_expr_context(enum_type),
+                    enum_from_i32(enum_type, &format!("self.{}", result.name)),
                     result.name,
                 ));
             }
@@ -748,6 +748,18 @@ fn is_enum(attrs: &[Attribute]) -> bool {
         }
     }
     false
+}
+
+fn enum_from_i32(enum_type: &str, value: &str) -> String {
+    // grpcio-compiler uses Prost 0.11, whose enums do not implement TryFrom.
+    if cfg!(feature = "grpcio-prost-codec") {
+        format!("{}::from_i32({})", type_in_expr_context(enum_type), value)
+    } else {
+        format!(
+            "<{} as ::std::convert::TryFrom<i32>>::try_from({}).ok()",
+            enum_type, value
+        )
+    }
 }
 
 // When a generic type is used in expression context, it might need to be adjusted.
